@@ -163,9 +163,12 @@
     <el-row v-show="isNERResShow" :span="24" style="margin-top: 10px;margin-left: 10px;margin-right: 10px">
       <el-col :span="6" style="margin-top: 10px;margin-left: 10px">
         NER识别标签说明：
-        <el-tabs style="color: red">ORG:组织名称</el-tabs>
-        <el-tabs style="color: blue">LOC:地理位置</el-tabs>
-        <el-tabs style="color: green">PER:人名</el-tabs>
+        <el-tabs
+          v-for="label in nerLabelList"
+          :style="label.color"
+        >
+          {{ label.label }}:{{ label.name }}
+        </el-tabs>
       </el-col>
       <el-col :span="10" style="margin-top:10px">
         模型分析结果：
@@ -513,7 +516,7 @@
               for(let index=0;index<this.nerLabelList.length;index++){
                 if (this.nerLabelList[index]['label'].length===1)
                   this.nerLabelList[index]['color']="color:black";
-                this.nerLabelList[index]['color']="color:"+this.color16()
+                else this.nerLabelList[index]['color']="color:"+this.color16()
               }
 
               for (let index=0;index<resultList.length;index++){
@@ -525,15 +528,12 @@
                   let tempLabel=tempList.labels[indexTemp];
                   if(tempLabel!=='O'){
                     let tempTempLabel=tempLabel.slice(-3);
+                    console.log("getNERLabels tempTempLabel", tempTempLabel);
 
-
-
-                    if(tempTempLabel==='ORG'){
-                      tempColorList.push("color:red");
-                    }else if(tempTempLabel==='LOC'){
-                      tempColorList.push("color:blue");
-                    }else if(tempTempLabel==='PER'){
-                      tempColorList.push("color:green");
+                    for(let index=0;index<this.nerLabelList.length;index++) {
+                      if (tempTempLabel === this.nerLabelList[index]['label']) {
+                        tempColorList.push(this.nerLabelList[index]['color']);
+                      }
                     }
                   }else {
                     tempColorList.push("color:black");
