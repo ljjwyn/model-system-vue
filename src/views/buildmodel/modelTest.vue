@@ -70,8 +70,8 @@
   import  Stomp from 'stompjs';
   import SockJS from "sockjs-client";
   import {modelTest,getModelTestConfig, modelTestRE} from '@/api/model'
+  import {stompUrl} from "@/api/axiosApi"
 
-  export const MQTT_SERVICE = 'ws://localhost:15674/stomp' // mqtt服务地址
   export const MQTT_USERNAME = 'root' // mqtt连接用户名
   export const MQTT_PASSWORD = 'root' // mqtt连接密码
 
@@ -197,7 +197,7 @@
       },
       //连接
       connect:function(){
-        let ws = new SockJS('http://localhost:15674/stomp');
+        let ws = new SockJS(stompUrl+'stomp');
         this.client=Stomp.over(ws);
         // SockJS does not support heart-beat: disable heart-beats
         this.client.heartbeat.outgoing = 0;

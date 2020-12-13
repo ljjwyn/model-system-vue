@@ -1,6 +1,6 @@
 <template>
   <el-row>
-    <el-col :span="22" :offset="1" style="margin: 20px;">
+    <el-col :span="22" :offset="1" >
       <el-card class="box-card" align-center style="margin-top: 10px">
         <div slot="header" class="clearfix">
           <span>模型管理</span>

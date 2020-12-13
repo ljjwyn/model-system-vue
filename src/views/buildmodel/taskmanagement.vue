@@ -94,6 +94,10 @@
                 <el-button
                   size="mini"
                   @click="handleEdit(scope.$index, scope.row)">详情</el-button>
+                <el-button
+                  size="mini"
+                  type="danger"
+                  @click="handleDelete(scope.$index, scope.row)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -108,6 +112,7 @@
 
 <script>
   import {getTaskList,createTask} from '@/api/model'
+  import {deleteTask} from '@/api/modelManagementApi'
   export default {
     name: 'taskmanagement',
     data() {
@@ -135,6 +140,25 @@
     methods:{
       handleEdit(index,row){
         console.log("index",index);
+      },
+      handleDelete(index,row){
+        console.log("index",index);
+        console.log("row",row);
+        this.$confirm('确认删除任务！是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'success'
+        }).then(() => {
+          deleteTask(row.uid).then(res => {
+            this.$message.info(res.message);
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });
+        });
+
       },
       onSubmit(){
         if(this.form.taskName.trim()===''){

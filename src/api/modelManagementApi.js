@@ -1,4 +1,14 @@
 import request from '@/utils/request'
 import axios from 'axios'
-const baseUrl = "http://127.0.0.1:8080/webAgorithm/";
-const pythonUrl = "http://127.0.0.1:3002/";
+import {pythonUrl, baseUrl} from './axiosApi'
+
+// 删除任务及其产生的模型，参数等信息
+export const deleteTask = (data) =>
+  request({
+    url: baseUrl+'taskManagement/deleteallrecord',
+    headers : {
+      'Content-Type' : 'application/json',
+    },
+    method: "POST",
+    data:{"taskUid":data}
+  });
