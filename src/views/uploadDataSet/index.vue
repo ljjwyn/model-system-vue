@@ -98,7 +98,7 @@
                 ref="upload"
                 style="width: 200px;margin-top: 5px"
                 class="upload-demo"
-                action="http://127.0.0.1:8080/webAgorithm/multiUpload"
+                :action="uploadUrl"
                 :on-preview="handlePreviewUpload"
                 :on-remove="handleRemoveUpload"
                 :on-progress="uploadFileProcess"
@@ -128,6 +128,7 @@
 <script>
   import {getDataSetList,getSubFile,getSubFileContent
     ,preProcessDataSet,uploadFile,insertIntoDB} from '@/api/datasetmanagementApi';
+  import {baseUrl,pythonUrl} from '@/api/axiosApi'
   import axios from 'axios';
   export default {
     name: 'index',
@@ -151,6 +152,7 @@
         fileData: '',  // 文件上传数据（多文件合一)
         progressFlag:true,
         percentage:0,
+        uploadUrl:baseUrl+'multiUpload',
       }
     },
     mounted:function(){
@@ -219,7 +221,8 @@
           const fn = this.uploadProgress; // 我们自己处理上传进度的函数
           axios({
             method: 'post',
-            url: 'http://127.0.0.1:8080/webAgorithm/multiUpload',
+            //url: 'http://127.0.0.1:8080/webAgorithm/multiUpload',
+            url: this.uploadUrl,
             headers: {
               'Content-Type': 'multipart/form-data'
             },
