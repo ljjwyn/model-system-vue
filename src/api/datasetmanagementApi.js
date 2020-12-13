@@ -76,5 +76,17 @@ export const insertIntoDB = (data) =>
   });
 
 
+// 一次性删除数据集的文件及其在数据库的记录
+export const deleteAll = (data) =>
+  request({
+    url: baseUrl+'textDataSet/deleteall',
+    headers : {
+      'Content-Type' : 'application/json',
+    },
+    method: "POST",
+    data:{"id": data}
+  });
+
+
 
 

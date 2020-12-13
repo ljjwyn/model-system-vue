@@ -127,7 +127,7 @@
 
 <script>
   import {getDataSetList,getSubFile,getSubFileContent
-    ,preProcessDataSet,uploadFile,insertIntoDB} from '@/api/datasetmanagementApi';
+    ,deleteAll,uploadFile,insertIntoDB} from '@/api/datasetmanagementApi';
   import {baseUrl,pythonUrl} from '@/api/axiosApi'
   import axios from 'axios';
   export default {
@@ -167,6 +167,29 @@
       handleDelete(index, row){
         console.log("handleDelete index",index);
         console.log("handleDelete row",row);
+        this.$confirm('删除这个数据集！是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'success'
+        }).then(() => {
+          deleteAll(row.id).then(res=>{
+            console.log("deleteAll res", res);
+            this.$message({
+              type: 'info',
+              message: '已删除'
+            });
+          }, error => {
+            this.$message({
+              type: 'info',
+              message: error
+            });
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });
+        });
       },
       handlePreview(index, row){
         console.log("handleDelete index",index);
