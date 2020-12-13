@@ -156,14 +156,15 @@
       }
     },
     mounted:function(){
-      getDataSetList().then(res=>{
-        console.log("getDataSetList res",res);
-        this.dataSetList = res;
-      },error=>{
-
-      })
+      this.loadDataSetList();
     },
     methods:{
+      loadDataSetList(){
+        getDataSetList().then(res=>{
+          console.log("getDataSetList res",res);
+          this.dataSetList = res;
+        })
+      },
       handleDelete(index, row){
         console.log("handleDelete index",index);
         console.log("handleDelete row",row);
@@ -178,6 +179,7 @@
               type: 'info',
               message: '已删除'
             });
+            this.loadDataSetList();
           }, error => {
             this.$message({
               type: 'info',
@@ -253,7 +255,6 @@
             onUploadProgress: fn, // `onUploadProgress` 允许为上传处理进度事件
           }).then(res=>{
             console.log("axios res",res);
-
             // 调用insert接口在文件上传成功后将上传的数据集的信息添加在数据库中
             let requestMap={
               "dataSetName":this.uploadDataSetName,
@@ -263,6 +264,7 @@
             insertIntoDB(requestMap).then(res=>{
               console.log("insertIntoDB res",res);
               this.$message.success('文件上传成功！');
+              this.loadDataSetList();
             },error => {
               this.$message.error('文件上传失败，错误信息！',error);
             })
