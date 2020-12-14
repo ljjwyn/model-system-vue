@@ -93,20 +93,120 @@
                 @click="handleModelTest(scope.$index, scope.row)">评估</el-button>
               <el-button
                 size="mini"
-                @click="handleEdit(scope.$index, scope.row)">详情</el-button>
+                @click="getModelInformation(scope.$index, scope.row)">详情</el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-card>
     </el-col>
+    <el-col :span="22" :offset="1" style="margin-bottom: 10px;margin-top:10px" >
+      <el-tabs type="border-card" v-model="activeName">
+
+        <el-tab-pane name="first">
+          <span slot="label"><i class="el-icon-set-up"></i> 模型详细信息</span>
+          <el-card class="box-card" align-center v-if="selectModel">
+            <el-col :span="10" style="margin: 10px">
+              <el-tag><strong>模型Uid: </strong>{{selectModel.modelUid}}</el-tag><br/>
+              <el-tag style="margin-top: 5px">模型名称: <strong style="color: red">{{selectModel.modelName}}</strong></el-tag><br/>
+              <el-tag style="margin-top: 5px">模型描述: <strong style="color: red">{{selectModel.modelDescription}}</strong></el-tag><br/>
+              <el-tag style="margin-top: 5px">建模开始时间: <strong style="color: red">{{selectModel.startTime}}</strong></el-tag><br/>
+              <el-tag style="margin-top: 5px">建模完成时间: <strong style="color: red">{{selectModel.endTime}}</strong></el-tag><br/>
+              <el-tag style="margin-top: 5px">生产模型名称: <strong style="color: red">{{selectModel.saveModelName}}</strong></el-tag><br/>
+            </el-col>
+            <div style="margin-top: 50px">
+              <el-col :span="6">
+                <strong>模型进度</strong>
+                <el-progress type="circle" :percentage="selectModel.buildingProcess" :status="selectModel.isSuccess"></el-progress>
+              </el-col>
+              <el-col :span="6">
+                <strong>模型测试准确率</strong>
+                <el-progress type="circle" :percentage="selectModel.modelTestAccuracy"></el-progress>
+              </el-col>
+            </div>
+
+          </el-card>
+          <el-card v-else>
+            <strong>请选择一个模型查看详情！</strong>
+          </el-card>
+        </el-tab-pane>
+
+        <el-tab-pane name="second">
+          <span slot="label"><i class="el-icon-set-up"></i> 模型建模信息</span>
+          <el-col :span="24" style="padding: 5px">
+            <el-tag>选中模型为：{{selectModelName}}</el-tag>
+          </el-col>
+          <strong v-if="processAccContents.length===0" style="color:red">选择的模型没有建模进度记录，无法查看！</strong>
+          <div v-else>
+            <el-col :span="12" style="padding: 5px">
+              <el-card class="box-card" align-center style="margin-top: 10px">
+                <div slot="header" class="clearfix">
+                  <span>模型训练准确率</span>
+                </div>
+                <line-plot :processData="processData" style="margin: 10px"></line-plot>
+              </el-card>
+            </el-col>
+            <el-col :span="12" style="padding: 5px">
+              <el-card class="box-card" align-center style="margin-top: 10px">
+                <div slot="header" class="clearfix">
+                  <span>模型训练损失</span>
+                </div>
+                <line-plot-loss :processDataLoss="processDataLoss" style="margin: 10px"></line-plot-loss>
+              </el-card>
+            </el-col>
+            <el-col :span="22" :offset="1">
+              <el-card class="box-card" align-center style="margin: 10px">
+                <div slot="header" class="clearfix">
+                  <span>建模进度详情</span>
+                </div>
+                <time-line :processContents="processAccContents"></time-line>
+              </el-card>
+            </el-col>
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane name="third">
+          <span slot="label"><i class="el-icon-set-up"></i> 模型参数信息</span>
+          <el-table
+            :data="parameterTableData"
+            stripe
+            highlight-current-row
+            style="width: 80%;margin: auto">
+            <el-table-column
+              prop="id"
+              label="序号"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="parameterName"
+              label="参数名"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              label="参数值">
+              <template slot-scope="scope">
+                <el-input style="width: 65%" disabled v-model="scope.row.parameterValue" ></el-input>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+      </el-tabs>
+    </el-col>
   </el-row>
 </template>
 
 <script>
-  import {getTableData} from '@/api/test'
+import {getTableData, getModelBuildRecord, preRunModel} from '@/api/test'
+  import linePlot from './components/linePlot'
+  import linePlotLoss from './components/linePlotLoss'
+  import timeLine from './components/timeLine'
 
   export default {
     name: 'modelManagement',
+    components:{
+      linePlot,
+      linePlotLoss,
+      timeLine
+    },
     data:function f() {
       return{
         modelList:[{
@@ -120,6 +220,13 @@
           buildingProcess:78
         }],
         successList:[],
+        processData:[],
+        processDataLoss:[],
+        processAccContents:[],
+        selectModelName:'',
+        activeName:'first',
+        selectModel:undefined,
+        parameterTableData:[],
       }
     },
     mounted(){
@@ -193,7 +300,65 @@
             message: '已取消删除'
           });
         });
-      }
+      },
+      getModelInformation(index, row){
+        this.processData = [];
+        this.processDataLoss = [];
+        this.processAccContents = [];
+        this.selectModelName = row.modelName;
+        this.activeName = 'first'
+        this.selectModel = row;
+        this.getModelMoreInfo(row.modelConfId);
+        if (row.buildingProcess===100) this.selectModel.isSuccess = 'success';
+        else this.selectModel.isSuccess = 'exception';
+        getModelBuildRecord(row.modelUid).then(res => {
+          console.log("getModelBuildRecord res",res);
+          let modelBuildProcess = res.modelBuildProcess;
+          if(modelBuildProcess.length===0){
+            this.$message.info("模型还未开始创建，或未保存建模记录");
+          }else{
+            this.processData = modelBuildProcess;
+            this.processDataLoss = modelBuildProcess;
+            for(let index=0;index<modelBuildProcess.length;index++){
+              let contentAcc = '模型迭代第：'+modelBuildProcess[index].batchId
+                +'轮; 训练集准确率 => '+modelBuildProcess[index].train_acc +'; 建模损失 => '+modelBuildProcess[index].loss;
+              let timeAcc = modelBuildProcess[index].time;
+              let tempMapAcc = {
+                content: contentAcc,
+                timestamp: timeAcc,
+                size:'medium',
+                type:'primary',
+                icon:'el-icon-more'
+
+              };
+              this.processAccContents.push(tempMapAcc);
+            }
+          }
+        })
+      },
+      getModelMoreInfo(modelConfigUid){
+        this.parameterTableData=[];
+        preRunModel({"configId":modelConfigUid}).then(
+          res=>{
+            let parameterMap=eval("("+res.modelConfMap+")");
+            let count = 1;
+            console.log("editConfig parameterMap",parameterMap);
+            for (let key in parameterMap) {
+              //parameterMap.forEach(function(value,key){
+              console.log(parameterMap[key],key);
+              let tempMap = {
+                "id":count,
+                "parameterName":key,
+                "parameterValue":parameterMap[key]
+              }
+              this.parameterTableData.push(tempMap);
+              count++;
+            }
+          },error => {
+            console.log("preRunModel error",error);
+          }
+        )
+      },
     },
   }
 </script>

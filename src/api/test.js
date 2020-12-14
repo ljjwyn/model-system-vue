@@ -69,3 +69,14 @@ export const getNERLabels = requestData =>
     method: "POST",
     data: {"dataSetName": requestData}
   });
+
+// 获取模型建模过程的详情
+export const getModelBuildRecord = uid =>
+  request({
+    url: pythonUrl+'getbuildrecord',
+    headers : {
+      'Content-Type' : 'application/json',
+    },
+    method: "POST",
+    data: {"uid": uid}
+  });

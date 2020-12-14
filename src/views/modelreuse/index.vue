@@ -33,7 +33,7 @@
         <div style="margin-left: 20px">
           模型详情：
           <el-tag
-            style="width: auto"
+            style="width: auto;margin: 5px"
             v-for="tag in setTaps"
             :key="tag.name"
             closable
@@ -722,13 +722,7 @@
             roam: true, // 是否开启鼠标缩放和平移漫游。默认不开启。如果只想要开启缩放或者平移,可以设置成 'scale' 或者 'move'。设置成 true 为都开启
             edgeSymbol: ['circle', 'arrow'],
             edgeSymbolSize: [2, 10],
-            edgeLabel: {
-              normal: {
-                textStyle: {
-                  fontSize: 20
-                }
-              }
-            },
+
             force: {
               repulsion: 2500,
               edgeLength: [10, 50]
@@ -745,6 +739,9 @@
                 show: true,
                 formatter: function (x) {
                   return x.data.name;
+                },
+                textStyle: {
+                  fontSize: 20
                 }
               }
             },
