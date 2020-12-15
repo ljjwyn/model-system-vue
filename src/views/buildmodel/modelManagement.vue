@@ -5,6 +5,11 @@
         <div slot="header" class="clearfix">
           <span>模型管理</span>
         </div>
+        <el-col :span="24">
+          <el-button size="mini" round @click="refreshTable">{{refreshContent}}</el-button>
+          <el-button type="primary" style="float: right" icon="el-icon-refresh" circle @click="getTableList"></el-button>
+
+        </el-col>
         <el-table
           :data="modelList"
           height="400"
@@ -28,7 +33,7 @@
                   <!--<span>{{ props.row.startDate }}</span>-->
                 </el-form-item>
                 <el-form-item label="模型完成时间">
-                  <span>{{ props.row.endTime }}</span>
+                  <span>{{ props.row.endTime| dateYMDHMSFormat }}</span>
                 </el-form-item>
                 <el-form-item label="模型超参数ID">
                   <span>{{ props.row.modelConfId }}</span>
@@ -109,16 +114,16 @@
               <el-tag><strong>模型Uid: </strong>{{selectModel.modelUid}}</el-tag><br/>
               <el-tag style="margin-top: 5px">模型名称: <strong style="color: red">{{selectModel.modelName}}</strong></el-tag><br/>
               <el-tag style="margin-top: 5px">模型描述: <strong style="color: red">{{selectModel.modelDescription}}</strong></el-tag><br/>
-              <el-tag style="margin-top: 5px">建模开始时间: <strong style="color: red">{{selectModel.startTime}}</strong></el-tag><br/>
-              <el-tag style="margin-top: 5px">建模完成时间: <strong style="color: red">{{selectModel.endTime}}</strong></el-tag><br/>
+              <el-tag style="margin-top: 5px">建模开始时间: <strong style="color: red">{{selectModel.startTime| dateYMDHMSFormat}}</strong></el-tag><br/>
+              <el-tag style="margin-top: 5px">建模完成时间: <strong style="color: red">{{selectModel.endTime| dateYMDHMSFormat}}</strong></el-tag><br/>
               <el-tag style="margin-top: 5px">生产模型名称: <strong style="color: red">{{selectModel.saveModelName}}</strong></el-tag><br/>
             </el-col>
-            <div style="margin-top: 50px">
-              <el-col :span="6">
+            <div style="margin-top: 40px">
+              <el-col :span="6" style="margin: auto">
                 <strong>模型进度</strong>
                 <el-progress type="circle" :percentage="selectModel.buildingProcess" :status="selectModel.isSuccess"></el-progress>
               </el-col>
-              <el-col :span="6">
+              <el-col :span="6" style="margin: auto">
                 <strong>模型测试准确率</strong>
                 <el-progress type="circle" :percentage="selectModel.modelTestAccuracy"></el-progress>
               </el-col>
@@ -227,25 +232,32 @@ import {getTableData, getModelBuildRecord, preRunModel} from '@/api/test'
         activeName:'first',
         selectModel:undefined,
         parameterTableData:[],
+        refreshContent:'关闭自动刷新',
+        tableInterval:undefined,
       }
     },
     mounted(){
-      getTableData().then(res => {
-        console.log("getTableData api tableData :", res);
-        this.modelList = res.data;
-        for(let index=0;index<this.modelList.length;index++){
-          if(this.modelList[index].buildingProcess >= 100){
-            this.modelList[index].successStatue = "success";
-          }else {
-            this.modelList[index].successStatue = "exception";
-          }
-        }
-      },error => {
-        console.log("getTableData error :", error);
-        this.$message.error('请求现有模型列表异常！严重的故障哈！');
-      })
+      this.getTableList();
+      //setInterval 每隔1000ms执行一次
+      this.tableInterval = setInterval(this.getTableList,2000)
     },
     methods: {
+      getTableList(){
+        getTableData().then(res => {
+          console.log("getTableData api tableData :", res);
+          this.modelList = res.data;
+          for(let index=0;index<this.modelList.length;index++){
+            if(this.modelList[index].buildingProcess >= 100){
+              this.modelList[index].successStatue = "success";
+            }else {
+              this.modelList[index].successStatue = "exception";
+            }
+          }
+        },error => {
+          console.log("getTableData error :", error);
+          this.$message.error('请求现有模型列表异常！严重的故障哈！');
+        })
+      },
       handleEdit(index, row) {
         console.log("handleEdit index", index);
         console.log("handleEdit row", row);
@@ -359,6 +371,17 @@ import {getTableData, getModelBuildRecord, preRunModel} from '@/api/test'
           }
         )
       },
+      refreshTable(){
+
+        if(this.refreshContent==='关闭自动刷新'){
+          this.refreshContent='打开自动刷新'
+          clearInterval(this.tableInterval);
+        }else {
+          //setInterval 每隔1000ms执行一次
+          this.tableInterval = setInterval(this.getTableList,2000)
+          this.refreshContent='关闭自动刷新'
+        }
+      }
     },
   }
 </script>
