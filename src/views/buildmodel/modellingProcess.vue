@@ -85,6 +85,7 @@
   import  Stomp from 'stompjs';
   import SockJS from "sockjs-client";
   import {stompUrl} from "@/api/axiosApi"
+  import {getAModelRecord} from '@/api/model'
 
   export const MQTT_USERNAME = 'root' // mqtt连接用户名
   export const MQTT_PASSWORD = 'root' // mqtt连接密码

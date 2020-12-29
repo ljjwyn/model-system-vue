@@ -61,7 +61,8 @@
           >停止模型</el-button>
         </div>
       </div></el-col>
-      <el-col :span="10"><div class="grid-content bg-purple">
+      <el-col :span="10">
+        <div class="grid-content bg-purple">
         <el-upload
           class="upload-demo"
           drag
@@ -78,7 +79,8 @@
         <el-button style="margin-top: 5px" :disabled="isBasicModel" v-on:click="startAnalysis" type="primary" round icon="el-icon-s-promotion">分析</el-button>
         <el-button style="margin-top: 5px" :disabled="isBasicModel" v-on:click="destroyPlot" type="warning" round icon="el-icon-delete-solid
 ">销毁</el-button>
-      </div></el-col>
+      </div>
+      </el-col>
     </el-row>
 
     <el-divider><i class="el-icon-pear"></i></el-divider>
@@ -763,6 +765,8 @@
           console.log(params.data)//获取点击的头像的数据信息
         });
       },
+
+      //TODO 这里的颜色会很丑且并不好用，建议之后替换随机函数
       color16(){
         let r = Math.floor(Math.random()*256);
         let g = Math.floor(Math.random()*256);

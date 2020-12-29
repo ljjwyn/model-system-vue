@@ -90,3 +90,26 @@ export const modelTestRE = (data) =>
   });
 
 
+// 根据basicmodelid获取符合的模型
+export const getSavaModelId = (data) =>
+  request({
+    url: baseUrl+'modelbuildrecord/getsavemodelname',
+    headers : {
+      'Content-Type' : 'application/json',
+    },
+    method: "POST",
+    data:{"modelBasicId": data}
+  });
+
+// 根据modelUid获取模型记录
+export const getAModelRecord = (data) =>
+  request({
+    url: baseUrl+'modelbuildrecord/getmodelrecord',
+    headers : {
+      'Content-Type' : 'application/json',
+    },
+    method: "POST",
+    data:{"modelUid": data}
+  });
+
+

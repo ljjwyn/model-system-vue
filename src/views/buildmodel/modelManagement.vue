@@ -201,9 +201,10 @@
 
 <script>
 import {getTableData, getModelBuildRecord, preRunModel} from '@/api/test'
-  import linePlot from './components/linePlot'
-  import linePlotLoss from './components/linePlotLoss'
-  import timeLine from './components/timeLine'
+import linePlot from './components/linePlot'
+import linePlotLoss from './components/linePlotLoss'
+import timeLine from './components/timeLine'
+import {getAModelRecord} from "@/api/model";
 
   export default {
     name: 'modelManagement',
@@ -238,11 +239,26 @@ import {getTableData, getModelBuildRecord, preRunModel} from '@/api/test'
     },
     mounted(){
       this.getTableList();
-      //setInterval 每隔1000ms执行一次
       this.tableInterval = setInterval(this.getTableList,2000)
+      //setInterval 每隔1000ms执行一次
+      if (this.predictSelectModel!==''){
+        this.refreshContent='关闭自动刷新';
+        this.refreshTable();
+        console.log("predictSelectModel_____newName_____",this.predictSelectModel);
+        getAModelRecord(this.predictSelectModel).then(res => {
+          console.log("getAModelRecord res", res);
+          this.getModelInformation(0, res.modelBuildRecord);
+        })
+      }
+    },
+    computed:{
+      predictSelectModel(){
+        return this.$route.query.predictSelectModel
+      }
     },
     methods: {
       getTableList(){
+
         getTableData().then(res => {
           console.log("getTableData api tableData :", res);
           this.modelList = res.data;
@@ -372,7 +388,6 @@ import {getTableData, getModelBuildRecord, preRunModel} from '@/api/test'
         )
       },
       refreshTable(){
-
         if(this.refreshContent==='关闭自动刷新'){
           this.refreshContent='打开自动刷新'
           clearInterval(this.tableInterval);

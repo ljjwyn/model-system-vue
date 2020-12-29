@@ -26,7 +26,7 @@
           console.log('processData change', newName);
           this.line.changeData(newName);
           }
-        }
+      }
     },
     mounted(){
       console.log("processData",this.processData);
