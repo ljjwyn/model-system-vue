@@ -39,10 +39,10 @@
         xAxis: {
           tickCount: 5,
         },
-        slider: {
-          start: 0.1,
-          end: 0.5,
-        },
+        // slider: {
+        //   start: 0.1,
+        //   end: 0.5,
+        // },
       });
 
       this.line.render();

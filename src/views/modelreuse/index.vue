@@ -193,7 +193,6 @@
         <div id="container" style="width:600px; height:600px;"></div>
       </div>
     </el-card>
-
     <el-divider><i class="el-icon-baseball"></i></el-divider>
 
 
@@ -230,6 +229,9 @@
         setTaps:[],
         modelInput:'',
         modelOutput:'',
+
+        //启动多线程模型复用标识
+        threadName:'',
 
         //NER展示参数
         nerNumList:[],
@@ -411,6 +413,7 @@
         }
         loadModel(requestData).then(res=>{
           console.log("loadModel res",res);
+          this.threadName = res['threadName'];
           this.active=2;
           this.isShowModelInput=true;
           this.isLoading=false;
@@ -424,12 +427,18 @@
         })
       },
       stopModel:function() {
-        stopTheModel().then(res=>{
+        stopTheModel(this.threadName).then(res=>{
           this.active=1;
           console.log("stop model success", res);
-          this.$message.info('停止模型成功');
-          this.isShowModelInput=false;
-          this.reInput();
+          if (res['code']===200){
+            this.$message.info('停止模型成功');
+            this.isShowModelInput=false;
+            this.reInput();
+          }else if(res['code']===400){
+            this.$message.info('threadName错误');
+          }else{
+            this.$message.info('模型停止失败');
+          }
         },error => {
           console.log("stop model error", error);
           this.$message.error('停止模型错误');
@@ -491,7 +500,7 @@
       predictInput:function() {
         this.predictInputIsLoading=true;
         this.modelOutput='';
-        predictModelInput({'sentence':this.modelInput}).then(res=>{
+        predictModelInput({'threadName':this.threadName,'sentence':this.modelInput}).then(res=>{
           console.log("predictInput res",res);
           this.predictInputIsLoading=false;
           let resultList=res.result;

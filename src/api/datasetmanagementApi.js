@@ -87,6 +87,17 @@ export const deleteAll = (data) =>
     data:{"id": data}
   });
 
+// 下载批量预测结果
+export const downloadPredictFile = (data) =>
+  request({
+    url: baseUrl+'download',
+    headers : {
+      'Content-Type' : 'application/json',
+    },
+    method: "POST",
+    data:{"predictFileName": data}
+  });
+
 
 
 

@@ -30,13 +30,14 @@ export const loadModel = requestData =>
     data: requestData
   });
 // 停止模型
-export const stopTheModel = () =>
+export const stopTheModel = data =>
   request({
     url: pythonUrl+'stopmodel',
     headers : {
       'Content-Type' : 'application/json',
     },
-    method: "GET"
+    method: "POST",
+    data:{'threadName': data}
   });
 // 分析知识图谱类的模型
 export const showKnowledgeGraph = requestData =>

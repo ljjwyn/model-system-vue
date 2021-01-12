@@ -38,7 +38,7 @@
         <el-tag closable style="margin-top: 5px">
           请单独长传预测数据集一个文件。请务必填写文件的基本信息
         </el-tag>
-        <el-upload
+         <el-upload
           ref="upload"
           style="width: 200px;margin-top: 5px"
           class="upload-demo"
@@ -113,21 +113,82 @@
           <aside style="padding: 20px">选择模型后展示模型的基本信息</aside>
         </el-col>
       </el-col>
-
     </el-card>
+    <el-col :span="24">
+
+      <el-card class="box-card" align-center style="margin: 10px">
+        <el-col v-if="modelBuildRecordList[selectModelIndex]" :span="18" style="padding: 5px">
+          <el-card class="box-card" align-center style="margin: 10px">
+            <div slot="header" class="clearfix">
+              <span>预测结果预览</span>
+            </div>
+            <time-line :processContents="processTestContents"></time-line>
+          </el-card>
+        </el-col>
+        <el-col v-if="modelBuildRecordList[selectModelIndex]" :span="4" style="padding: 5px">
+          <el-card class="box-card" align-center style="margin: 10px">
+            <div slot="header" class="clearfix">
+              <span>预测进度</span>
+            </div>
+            <el-progress type="dashboard" :percentage="percent" :color="colors"></el-progress>
+          </el-card>
+        </el-col>
+        <el-col v-else style="padding: 10px">
+          <aside style="padding: 20px">开始预测展示具体详情</aside>
+        </el-col>
+        <el-col  :span="12" style="padding: 5px">
+          <el-card class="box-card" align-center style="margin: 10px">
+            <div slot="header" class="clearfix">
+              <span>标签比例</span>
+            </div>
+            <div id="container"></div>
+          </el-card>
+        </el-col>
+        <el-col :span="12" style="padding: 5px">
+          <el-card class="box-card" align-center style="margin: 10px">
+            <div slot="header" class="clearfix">
+              <span>标签比例</span>
+            </div>
+            <div id="rose"></div>
+          </el-card>
+        </el-col>
+        <el-col :span="12" style="padding: 5px">
+          <el-card class="box-card" align-center style="margin: 10px">
+            <div slot="header" class="clearfix">
+              <span>下载预测文件</span>
+            </div>
+            <el-tag>文件名：{{outputFileName}}</el-tag>
+            <el-button type="success" round :disabled="isNotFinished" size="small" @click="downloadFile">下载</el-button>
+          </el-card>
+        </el-col>
+
+      </el-card>
+
+    </el-col>
+
 
   </el-row>
 </template>
 
 <script>
-import {baseUrl} from "@/api/axiosApi";
+import {baseUrl, stompUrl} from "@/api/axiosApi";
 import axios from "axios";
-import {getModelListByType, getSavaModelId} from '@/api/model'
-import {insertIntoDB} from "@/api/datasetmanagementApi";
+import {getModelListByType, getSavaModelId, getModelTestConfig, predictFile} from '@/api/model'
+import {downloadPredictFile, insertIntoDB} from "@/api/datasetmanagementApi";
 import {insertAPredictDataSet} from "@/api/predictDataSetApi";
+import Stomp from "_stompjs@2.3.3@stompjs";
+import SockJS from "sockjs-client";
+import timeLine from '../buildmodel/components/timeLine'
+import { Pie, Radar } from '@antv/g2plot';
+
+export const MQTT_USERNAME = 'root' // mqtt连接用户名
+export const MQTT_PASSWORD = 'root' // mqtt连接密码
 
 export default {
   name: "modelPredict",
+  components:{
+    timeLine
+  },
   data:function (){
     return{
       uploadUrl:baseUrl+'uploadpredict',
@@ -147,11 +208,37 @@ export default {
       selectModelIndex:[],
       isDataSetName:true,
       isUploadFile:false,
+      processTestContents:[],
+      percent: 0,
+      outputFileName: undefined,
+      colors: [
+        {color: '#f56c6c', percentage: 20},
+        {color: '#e6a23c', percentage: 40},
+        {color: '#5cb87a', percentage: 60},
+        {color: '#1989fa', percentage: 80},
+        {color: '#6f7ad3', percentage: 100}
+      ],
+      piePlot:undefined,
+      pieData :[],
+
+      rosePlot:undefined,
+      //图表测试用数据
+      roseData:[
+        { type: '分类一', value: 27 },
+        { type: '分类二', value: 25 },
+        { type: '分类三', value: 18 },
+        { type: '分类四', value: 15 },
+        { type: '分类五', value: 10 },
+        { type: '其他', value: 5 },
+      ],
+
+      isNotFinished:true,
     }
   },
   computed:{
     taskUid(){
-      return this.$route.params.taskUid
+      // return this.$route.params.taskUid
+      return "initTest0106";
     }
   },
   watch:{
@@ -167,9 +254,75 @@ export default {
     }
   },
   mounted() {
+    if(this.taskUid!==undefined) {this.connect();}
+    else this.$message.info('taskUid为空，若进行测试模式请查看下头的TODO！');
     console.log("taskUid", this.taskUid);
+    this.piePlot = new Pie('container', {
+      appendPadding: 10,
+      data:[],
+      angleField: 'value',
+      colorField: 'type',
+      radius: 0.75,
+      label: {
+        type: 'spider',
+        labelHeight: 28,
+        content: '{name}\n{percentage}',
+      },
+      interactions: [{ type: 'element-selected' }, { type: 'element-active' }],
+    });
+    this.piePlot.render();
+
+    const data = [
+      { name: 'G2', star: 10178 },
+      { name: 'G6', star: 7077 },
+      { name: 'F2', star: 7345 },
+      { name: 'L7', star: 2029 },
+      { name: 'X6', star: 298 },
+      { name: 'AVA', star: 806 },
+    ];
+
+    this.rosePlot = new Radar('rose', {
+      data: data.map((d) => ({ ...d, star: Math.log(d.star) })),
+      xField: 'name',
+      yField: 'star',
+      meta: {
+        star: {
+          alias: 'star 数量',
+          min: 0,
+          nice: true,
+          formatter: (v) => Number(v).toFixed(2),
+        },
+      },
+      xAxis: {
+        tickLine: null,
+      },
+      yAxis: {
+        label: false,
+        grid: {
+          alternateColor: 'rgba(0, 0, 0, 0.04)',
+        },
+      },
+      // 开启辅助点
+      point: {
+        size: 2,
+      },
+      area: {},
+    });
+    this.rosePlot.render();
+
+
+  },
+  beforeRouteLeave(to, form, next) {
+    if(this.taskUid!==undefined){
+      this.client.disconnect();
+      console.log('消息队列接口已关闭');
+    }
+    console.log('监听标签页变化');
+    next()
   },
   methods:{
+
+
     //文件长传相关
     handleRemoveUpload(file, fileList) {
       console.log(file, fileList);
@@ -272,16 +425,122 @@ export default {
       if (this.uploadDataSetDescribe===''){
         this.uploadDataSetDescribe = "数据集名称为"+this.uploadDataSetName+"的数据集，这个数据集类型为"+this.selectCatalog
       }
+      this.outputFileName = this.taskUid.substring(0,4)+"_"+this.uploadDataSetName
       let requestMap={
-        "taskUid":"ceshitaskid111",
+        "taskUid":this.taskUid,
         "dataSetName":this.uploadDataSetName,
         "useModelName":this.modelBuildRecordList[this.selectModelIndex].saveModelName,
-        "dataSetDescription":this.uploadDataSetDescribe
+        "dataSetDescription":this.uploadDataSetDescribe,
+        "outputFileName": this.outputFileName
       }
       console.log("requestMap",requestMap);
       insertAPredictDataSet(requestMap).then(res => {
         console.log("insertAPredictDataSet res", res);
+        let modelUid = this.modelBuildRecordList[this.selectModelIndex].modelUid;
+        getModelTestConfig(modelUid).then(res => {
+          res['predictFileName'] = this.uploadDataSetName;
+          res['taskUid'] = this.taskUid;
+          predictFile(res).then(res => {
+            console.log("predictFile res", res);
+          })
+        })
       })
+    },
+
+    // stomp相关函数
+    onConnected:function(){
+      //订阅的频道
+
+      const topic = "/queue/modelPredictProcess_"+this.taskUid;
+      //TODO 打开下面这个注释可以结合python端的rabbitmq test程序测试stomp接口
+      // const topic = "/queue/modelProcessTest";
+      console.log("onConnected topic", topic);
+      this.client.subscribe(topic,this.responseCallback,this.onFailed);
+
+    },
+    onFailed:function(msg){
+      console.log("MQ Failed:" + msg);
+    },
+    //成功时的回调函数
+    responseCallback:function(msg){
+      //接收消息的处理
+      let message = eval("("+msg.body+")")
+      console.log("MQ msg=>", message);
+      if (message.process !== 100){
+        this.percent = message.process
+        //凑timeline的入参格式l
+        let timeLineMap = {}
+        if (message.taskType === 'textClassify'){
+          timeLineMap = {
+            content:'id:'+message.id+'预测句子：'+message.sentence+',预测标签为：'
+              +message.predictLabel,
+            timestamp: message.time
+          }
+        }else {
+          timeLineMap = {
+            content:'id:'+message.id+';预测句子：'+message.sentence+'\n预测标签为：'
+              +message.predictLabel,
+            timestamp: message.time
+          }
+        }
+
+        this.processTestContents.push(timeLineMap);
+
+        let labelProportion = message.labelProportion;
+        console.log("labelProportion", labelProportion)
+        let labelProportionMap=new Map(Object.entries(labelProportion));
+
+        if(this.percent%10===0){
+          let pieData = [];
+          let radarData = [];
+          for(let [key, value] of labelProportionMap){
+            pieData.push({
+              'type': key,
+              'value': value
+            })
+            radarData.push({
+              'name':key,
+              'star':value
+            })
+          }
+          this.piePlot.changeData(pieData);
+          this.rosePlot.changeData(radarData);
+        }
+
+      }else {
+        this.isNotFinished=false;
+        this.percent = 100
+        this.$message({
+          type: 'info',
+          message: '建模完成'
+        });
+      }
+
+
+    },
+    //连接
+    connect:function(){
+      let ws = new SockJS(stompUrl+'stomp');
+      this.client=Stomp.over(ws);
+      // SockJS does not support heart-beat: disable heart-beats
+      this.client.heartbeat.outgoing = 0;
+      this.client.heartbeat.incoming = 0;
+      const headers = {
+        login: MQTT_USERNAME,
+        password: MQTT_PASSWORD
+      };
+      this.client.connect(MQTT_USERNAME, MQTT_PASSWORD, this.onConnected,this.onFailed,'/');
+    },
+
+    downloadFile(){
+      this.$notify({
+        message: '正在下载~',
+        type: 'success'
+      })
+      const a = document.createElement('a')
+      a.href = baseUrl+'/download?predictFileName=' + this.outputFileName
+      console.log('a.href=', a.href)
+      a.click()
     }
   }
 }

@@ -89,6 +89,17 @@ export const modelTestRE = (data) =>
     data
   });
 
+// 调用python端接口，批量预测模型
+export const predictFile = (data) =>
+  request({
+    url: pythonUrl+'predictfiles',
+    headers : {
+      'Content-Type' : 'application/json',
+    },
+    method: "POST",
+    data
+  });
+
 
 // 根据basicmodelid获取符合的模型
 export const getSavaModelId = (data) =>

@@ -23,7 +23,6 @@ service.interceptors.request.use(
       // please modify it according to the actual situation
       config.headers['X-Token'] = getToken();
     }
-    console.log("config",config);
     return config
   },
   error => {
@@ -47,7 +46,6 @@ service.interceptors.response.use(
    */
   response => {
     const res = response.data;
-    console.log("response",response);
     // TODO：拦截器处理res状态码。老的接口没设置状态码暂且不用它。
     if(res==="expire"){
       MessageBox.confirm('You have been logged out, you can cancel to stay on this page, or log in again', 'Confirm logout', {
@@ -59,7 +57,6 @@ service.interceptors.response.use(
           location.reload()
         })
       })
-      console.log(res)
       return Promise.reject(new Error(res.message || 'Error'))
     }else {
       return res

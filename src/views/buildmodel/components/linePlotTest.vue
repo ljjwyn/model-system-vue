@@ -41,32 +41,6 @@
       });
 
       this.line.render();
-      // this.line = new Chart({
-      //   container: 'container',
-      //   autoFit: true,
-      //   height: 500,
-      // });
-      // this.line.data(this.processData);
-      // this.line.scale('batchId', {
-      //   range: [0, 1],
-      // });
-      // this.line.scale('value', {
-      //   nice: true,
-      // });
-      //
-      // this.line.tooltip({
-      //   showCrosshairs: true,
-      // });
-      //
-      // this.line
-      //   .line()
-      //   .position('batchId*value')
-      //   .shape('hv')
-      //   .color('key');
-      //
-      // this.line.render();
-
-
     }
   }
 </script>
