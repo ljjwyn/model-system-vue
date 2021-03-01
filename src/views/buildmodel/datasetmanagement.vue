@@ -32,10 +32,10 @@
                 <el-button style="margin-left: 5px" type="primary" round @click="loadDataSet(value)">加载</el-button>
               </el-col>
               <el-col :span="24" v-if="dataSetList[value]" style="margin-top: 10px" v-show="dataSetTapShow">
-                <el-tag ><strong>数据集名称: </strong>{{dataSetList[value].dataSetName}}</el-tag>
-                <el-tag type="success"><strong>数据集类别: </strong>{{dataSetList[value].dataSetCatalog}}</el-tag>
-                <el-tag type="info"><strong>数据集路径: </strong>{{dataSetList[value].dataSetPath}}</el-tag>
-                <el-tag type="danger"><strong>数据集描述: </strong>{{dataSetList[value].dataSetDescription}}</el-tag>
+                <el-tag style="margin: 5px"><strong>数据集名称: </strong>{{dataSetList[value].dataSetName}}</el-tag>
+                <el-tag style="margin: 5px" type="success"><strong>数据集类别: </strong>{{dataSetList[value].dataSetCatalog}}</el-tag>
+                <el-tag style="margin: 5px" type="info"><strong>数据集路径: </strong>{{dataSetList[value].dataSetPath}}</el-tag>
+                <el-tag style="margin: 5px" type="danger"><strong>数据集描述: </strong>{{dataSetList[value].dataSetDescription}}</el-tag>
               </el-col>
               <el-col :span="24" style="margin-top: 10px">
                 <label>选择预览文件</label>
@@ -67,7 +67,7 @@
                 <el-col :span="24">
                   <label>这是<strong style="color: red" v-if="dataSetList[value]">{{dataSetList[value].dataSetCatalog}}</strong>任务，基于<strong style="color: red">{{preProcessList[preProcess]}}</strong>实例化加载</label>
                 </el-col>
-                <el-col :span="10">
+                <el-col :span="10" style="margin-top:10px">
                   <el-card class="box-card">
                     <div slot="header" class="clearfix">
                       <span>标签信息</span>
@@ -77,7 +77,7 @@
                     </div>
                   </el-card>
                 </el-col>
-                <el-col :span="13" style="margin-left: 10px">
+                <el-col :span="13" style="margin-left: 10px;margin-top:10px">
                   <el-card class="box-card">
                     <div slot="header" class="clearfix">
                       <span>实例化数据集预览</span>
@@ -87,7 +87,7 @@
                     </div>
                   </el-card>
                 </el-col>
-                <el-button style="margin-left: 5px" type="primary" round @click="nextStep" :disabled="!isAllFinish">下一步</el-button>
+                <el-button style="margin-left: 5px;margin-top: 10px" type="primary" round @click="nextStep" :disabled="!isAllFinish">下一步</el-button>
               </el-col>
 
             </el-tab-pane>

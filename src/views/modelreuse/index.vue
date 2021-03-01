@@ -183,17 +183,30 @@
     </el-row>
 
     <el-divider><i class="el-icon-grape"></i></el-divider>
-
-    <el-card v-show="isShowKnowledge" class="box-card" style="margin-top: 10px;margin-left: 10px;width:600px; height:500px;">
+    <el-card v-show="isShowKnowledge" class="box-card" style="margin-top: 10px;margin-left: 10px;height:700px;width:1000px;">
       <div slot="header" class="clearfix">
         <span>关系图谱</span>
         <el-button style="float: right; padding: 3px 0" type="text">图谱详情</el-button>
       </div>
-      <div class="text item">
-        <div id="container" style="width:600px; height:600px;"></div>
-      </div>
+      <div id="container" style="height:700px;width:1000px;"></div>
     </el-card>
+<!--    <el-col :span="6">-->
+<!--      <el-card v-show="isShowKnowledge" class="box-card" style="margin-top: 20px;margin-left: 10px">-->
+<!--        <div slot="header" class="clearfix">-->
+<!--          <span>关系图谱详情</span>-->
+<!--        </div>-->
+<!--      </el-card>-->
+<!--    </el-col>-->
+<!--    <el-col :span="18">-->
+<!--      <el-container>-->
+<!--        <el-main >-->
+<!--          <graph3-d style="height: 500px" :graph3Data="graph3Data"></graph3-d>-->
+<!--        </el-main>-->
+<!--      </el-container>-->
+<!--    </el-col>-->
+
     <el-divider><i class="el-icon-baseball"></i></el-divider>
+
 
 
   </el-row>
@@ -203,12 +216,16 @@
   import { getTableData, preRunModel, loadModel, getNERLabels,
     stopTheModel, showKnowledgeGraph, predictModelInput } from "@/api/test.js";
   import { Rose, WordCloud, Pie } from "@antv/g2plot";
-  import echarts from 'echarts'
+  import * as echarts from 'echarts'
   import axios from 'axios'; // 引入axios
   axios.defaults.withCredentials = true; // 允许携带cookie
+  import graph3D from './components/3Dgraph';
   // import polar from '@/views/Echarts/polar';
 
   export default {
+    components:{
+      graph3D
+    },
     data() {
       return {
         modelList: [],
@@ -260,6 +277,8 @@
         chartLink:[],
         chartCategories:[],
         isShowKnowledge:false,
+
+        graph3Data:undefined
       };
     },
     watch: {
@@ -291,12 +310,12 @@
             for(let index=0;index<resLabels.length;index++){
               let tempRoseData={
                 'type': resLabels[index],
-                'value': (resLabelScore[index]*100).toFixed(2)
+                'value': parseFloat((resLabelScore[index]*100).toFixed(2))
               }
               let tempWordCloud={
                 'id': index+1,
-                'word': resLabels[index],
-                'weight': (resLabelScore[index]*100).toFixed(2)
+                'name': resLabels[index],
+                'value': parseFloat((resLabelScore[index]*100).toFixed(2))
               }
               this.roseData.push(tempRoseData);
               this.wordData.push(tempWordCloud);
@@ -447,6 +466,25 @@
       },
       // 获取图谱res
       startAnalysis:function() {
+        // this.graph3Data = {"links":[{"source":0,"target":1,"val":"发病机制","value":4},
+        //     {"source":1,"target":2,"val":"营养不良，低蛋白饮食可导致胰腺萎缩、纤维化及结石形成。","value":31},
+        //     {"source":0,"target":3,"val":"ICD-10","value":6},{"source":3,"target":4,"val":"K85.9","value":5},
+        //     {"source":0,"target":5,"val":"病因","value":2},{"source":5,"target":6,"val":"药物和毒素","value":5},
+        //     {"source":5,"target":7,"val":"内分泌和代谢性疾病","value":9},{"source":0,"target":8,"val":"相关导致","value":4},
+        //     {"source":8,"target":9,"val":"系统性红斑狼疮","value":7},{"source":8,"target":10,"val":"炎症性肠病","value":5},
+        //     {"source":8,"target":11,"val":"川崎病","value":3},{"source":8,"target":12,"val":"敏性紫癜","value":4},
+        //     {"source":8,"target":13,"val":"溶血性尿毒综合征","value":8}],"nodes":[{"group":1,"id":0,"name":"坏死性胰腺炎"},
+        //     {"group":2,"id":1,"name":""},{"group":2,"id":2,"name":"营养不良，低蛋白饮食可导致胰腺萎缩、纤维化及结石形成。"},
+        //     {"group":3,"id":3,"name":""},{"group":3,"id":4,"name":"K85.9"},{"group":4,"id":5,"name":""},
+        //     {"group":4,"id":6,"name":"药物和毒素"},{"group":4,"id":7,"name":"内分泌和代谢性疾病"},{"group":5,"id":8,"name":""},
+        //     {"group":5,"id":9,"name":"系统性红斑狼疮"},{"group":5,"id":10,"name":"炎症性肠病"},
+        //     {"group":5,"id":11,"name":"川崎病"},{"group":5,"id":12,"name":"敏性紫癜"},
+        //     {"group":5,"id":13,"name":"溶血性尿毒综合征"}]};
+        //TODO 这个变量用于生成3d图谱的数据集，之后若想多图谱展示可以使用，但是3d图谱没有实体类别信息。
+        this.graph3Data = {
+          "links":[{"source":0,"target":1,"val":"导演","value":10}],
+          "nodes":[{"group":2,"id":1,"name":"孔正锡"},{"group":1,"id":0,"name":"长腿叔叔"}]
+        };
         let requestData = {
           "uid":this.modelList[this.value].modelUid,
           "modelName":this.modelList[this.value].saveModelName,
@@ -606,37 +644,19 @@
       wordCloudPlot(data) {
         let that = this;
         return new WordCloud(document.getElementById("wordCloudDom"), {
-          width: 600,
-          height: 400,
+          autoFit:true,
           data: data,
-          //maskImage: 'https://gw.alipayobjects.com/mdn/rms_2274c3/afts/img/A*07tdTIOmvlYAAAAAAAAAAABkARQnAQ',
+          wordField: 'name',
+          weightField: 'value',
+          colorField: 'name',
           wordStyle: {
-            rotation: [-Math.PI / 2, Math.PI / 2],
-            rotateRatio: 0.5,
-            rotationSteps: 4,
-            fontSize: [10, 50],
-            gridSize: 30,
-            color: (word, weight) => {
-              return this.getRandomColor();
-            },
-            active: {
-              shadowColor: '#333333',
-              shadowBlur: 10,
-            }
+            fontFamily: 'Verdana',
+            fontSize: [24, 80],
+            rotation: 0,
           },
-          shape: 'cardioid',
-          shuffle: false,
-          backgroundColor: '#fff',
-          tooltip: {
-            visible: true,
-          },
-          selected: -1,
-          onWordCloudClick(item, dimension, evt, fn) {
-            that.$message({
-              message: `点击了${item.word}`,
-              type: "success"
-            });
-          }
+          // 返回值设置成一个 [0, 1) 区间内的值，
+          // 可以让每次渲染的位置相同（前提是每次的宽高一致）。
+          random: () => 0.5,
         });
       },
       getRandomColor:function(){
@@ -656,25 +676,19 @@
       },
       // 玫瑰图
       rosePlot:function(data){
+        console.log("rosePlot data", data);
         return new Pie(document.getElementById("rosePie"), {
-          forceFit: true,
-          title: {
-            visible: false,
-            text: '',
-          },
-          description: {
-            visible: true,
-            text:
-              '表现预测结果各个标签所占的比例',
-          },
-          radius: 0.8,
           data:data,
+          appendPadding: 10,
           angleField: 'value',
           colorField: 'type',
+          radius: 0.75,
           label: {
-            visible: false,
-            type: 'inner',
+            type: 'spider',
+            labelHeight: 28,
+            content: '{name}\n{percentage}',
           },
+          interactions: [{ type: 'element-selected' }, { type: 'element-active' }],
           });
       },
 
@@ -733,7 +747,6 @@
             roam: true, // 是否开启鼠标缩放和平移漫游。默认不开启。如果只想要开启缩放或者平移,可以设置成 'scale' 或者 'move'。设置成 true 为都开启
             edgeSymbol: ['circle', 'arrow'],
             edgeSymbolSize: [2, 10],
-
             force: {
               repulsion: 2500,
               edgeLength: [10, 50]
@@ -752,7 +765,7 @@
                   return x.data.name;
                 },
                 textStyle: {
-                  fontSize: 20
+                  fontSize: 10
                 }
               }
             },

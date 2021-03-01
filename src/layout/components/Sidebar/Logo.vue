@@ -29,7 +29,7 @@ export default {
   },
   data() {
     return {
-      title: "算法平台",
+      title: "领域知识图谱构建平台",
       logo: require("@/assets/ouc.png")
     };
   }

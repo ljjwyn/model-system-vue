@@ -233,6 +233,8 @@ export default {
       ],
 
       isNotFinished:true,
+
+      recordPercent:0,
     }
   },
   computed:{
@@ -477,8 +479,13 @@ export default {
             timestamp: message.time
           }
         }else {
+          let sentenceStr = "";
+          for (let char of message.sentence){
+            sentenceStr += char;
+          }
+          console.log("sentenceStr",sentenceStr);
           timeLineMap = {
-            content:'id:'+message.id+';预测句子：'+message.sentence+'\n预测标签为：'
+            content:'id:'+message.id+';预测句子：'+sentenceStr+'\n预测标签为：'
               +message.predictLabel,
             timestamp: message.time
           }
@@ -487,10 +494,10 @@ export default {
         this.processTestContents.push(timeLineMap);
 
         let labelProportion = message.labelProportion;
-        console.log("labelProportion", labelProportion)
         let labelProportionMap=new Map(Object.entries(labelProportion));
-
-        if(this.percent%10===0){
+        console.log("labelProportionMap", labelProportionMap)
+        if(this.percent-this.recordPercent>=10){
+          this.recordPercent = this.percent;
           let pieData = [];
           let radarData = [];
           for(let [key, value] of labelProportionMap){

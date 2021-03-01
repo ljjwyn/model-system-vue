@@ -10,3 +10,14 @@ export const getVisitorCount = () =>
     },
     method: "GET"
   });
+
+// 获得访问量
+export const getSession = () =>
+  request({
+    url: baseUrl+'getsession',
+    headers : {
+      'Content-Type' : 'application/json',
+    },
+    method: "POST",
+    data:{}
+  });

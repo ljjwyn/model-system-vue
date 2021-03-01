@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: 'UI后台管理模板',
+  title: '领域知识图谱构建平台',
 
   /**
    * @type {boolean} true | false

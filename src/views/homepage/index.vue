@@ -11,13 +11,13 @@
             <span>相关链接</span>
           </div>
           <el-col :span="5" v-for="(item, index) in tagItemList" :offset="index > 0 ? 1 : 0">
-            <el-card :body-style="{ padding: '0px' }">
+            <el-card :body-style="{ padding: '0px' }" style="height: 400px">
               <img :src="item.imgUrl" class="image">
-              <div style="padding: 14px;">
+              <div style="padding: 14px">
                 <strong>{{item.tagName}}</strong><br>
                 <span style="font-size: small">{{item.describe}}</span>
                 <div class="bottom clearfix">
-                  <el-button type="text" class="button">跳转</el-button>
+                  <el-button type="text" class="button" @click="goRoute(item)">跳转</el-button>
                 </div>
               </div>
             </el-card>
@@ -29,6 +29,7 @@
 
 <script>
   import PanelGroup from './PanelGroup'
+  import {getSession} from "@/api/dashboardApi";
 
   const lineChartData = {
     newVisitis: {
@@ -58,28 +59,46 @@
       return {
         currentDate: new Date(),
         tagItemList:[
-          {"imgUrl":'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2393018698,1106040952&fm=11&gp=0.jpg',
+          {"imgUrl":'https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=3492539347,752220665&fm=26&gp=0.jpg',
             "tagName":'知识图谱数据集标注系统',
             "describe":'对爬取的数据进行人工/半人工线上标注并提供标注图谱的相关服务',
-            "url":'http://127.0.0.1:8080'},
+            //TODO 这里的标注系统的地址是写死的注意替换。
+            "url":'http://192.168.10.9:8080/labelsystem/login.html'},
           {"imgUrl":'https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=140170663,186220355&fm=26&gp=0.jpg',
             "tagName":'算法云平台',
             "describe":'基于标注平台数据集的在线建模、模型管理、模型复用云平台（本站）',
             "url":'http://127.0.0.1:8080'},
-          {"imgUrl":'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1605266662264&di=8c8ee722f57e5472a98820d4ea2b70d2&imgtype=0&src=http%3A%2F%2Ftm-image.tianyancha.com%2Ftm%2Fa54cde147a070a2f0f6bf832b9ec11e3.jpg',
+          {"imgUrl":'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3336814203,3537041036&fm=26&gp=0.jpg',
             "tagName":'M&D社区',
             "describe":'依托算法云平台的数据集、模型共享以及技术交流平台',
             "url":'http://127.0.0.1:8080'},
           {"imgUrl":'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=1277730282,3978004016&fm=26&gp=0.jpg',
             "tagName":'数据收集平台',
             "describe":'基于可控、可视化爬虫的数据收集平台',
-            "url":'http://127.0.0.1:8080'}
-        ]
+            "url":'http://localhost:9528/#/scrapy'}
+        ],
+        tokenUid:undefined,
       };
+    },
+    mounted() {
+      this.getSessionId();
     },
     methods:{
       handleSetLineChartData(type) {
         this.lineChartData = lineChartData[type]
+      },
+      goRoute(item){
+        console.log("goRoute item",item);
+        if (item.tagName === "知识图谱数据集标注系统") window.open(item.url+"?tokenUid="+this.tokenUid,'_blank');
+        else window.open(item.url,'_blank');
+      },
+      getSessionId(){
+        getSession().then(res => {
+          console.log("getsession", res);
+          this.tokenUid = res.tokenUid;
+          if(res.code===200) this.$message.info(res.message);
+          else this.$message.info("用户未登录，跳转到系统还需登录");
+        })
       }
     }
   }
