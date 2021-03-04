@@ -123,4 +123,26 @@ export const getAModelRecord = (data) =>
     data:{"modelUid": data}
   });
 
+//根据模型id获取用于多模型组合编排的请求参数
+export const getAModelRecordById = (data) =>
+  request({
+    url: baseUrl+'modelbuildrecord/getmodelrecordbyid',
+    headers : {
+      'Content-Type' : 'application/json',
+    },
+    method: "POST",
+    data:{"modelId": data}
+  });
+
+//待预测文本写入文件
+export const inputPredictToFile = (data) =>
+  request({
+    url: pythonUrl+'inputpredict',
+    headers : {
+      'Content-Type' : 'application/json',
+    },
+    method: "POST",
+    data:{"sentence": data}
+  });
+
 

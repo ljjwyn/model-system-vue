@@ -67,7 +67,7 @@
           class="upload-demo"
           drag
           :disabled="isBasicModel"
-          action="http://127.0.0.1:8080/webAgorithm/uploadtest"
+          :action="uploadUrl"
           :data="uploadDataSetName"
           :before-upload="beforeUpload"
           multiple>
@@ -220,6 +220,7 @@
   import axios from 'axios'; // 引入axios
   axios.defaults.withCredentials = true; // 允许携带cookie
   import graph3D from './components/3Dgraph';
+  import {baseUrl} from "@/api/axiosApi";
   // import polar from '@/views/Echarts/polar';
 
   export default {
@@ -239,6 +240,7 @@
         modelName:'',
         modelUid:'',
         modelConfig:'',
+        uploadUrl:baseUrl+"uploadtest",
         uploadDataSetName: {
           "datasetname":''
         },
