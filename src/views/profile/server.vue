@@ -6,26 +6,43 @@
           <span>微服务列表</span>
         </div>
         <el-table
-          :data="tableData"
+          :data="serverData"
           style="width: 100%"
           :row-class-name="tableRowClassName">
           <el-table-column
-            prop="name"
+            prop="serverName"
             label="微服务名称"
-            width="180">
+            width="200"
+          >
           </el-table-column>
           <el-table-column
-            prop="ip"
+            prop="sourceIp"
             label="微服务发布ip"
-            width="180">
+          >
           </el-table-column>
           <el-table-column
-            prop="port"
+            prop="sourcePort"
             label="端口">
           </el-table-column>
           <el-table-column
-            prop="state"
-            label="状态">
+            prop="memoryShare"
+            label="内存利用率">
+          </el-table-column>
+          <el-table-column
+            prop="cpuUtilization"
+            label="cpu利用率">
+          </el-table-column>
+          <el-table-column
+            label="状态"
+          >
+            <template slot-scope="scope">
+              <el-popover trigger="hover" placement="top">
+                <p>状态: {{ scope.row.state }}</p>
+                <div slot="reference" class="name-wrapper">
+                  <el-tag size="medium">{{ scope.row.state }}</el-tag>
+                </div>
+              </el-popover>
+            </template>
           </el-table-column>
           <el-table-column label="操作">
             <template slot-scope="scope">
@@ -59,9 +76,9 @@ export default {
   methods: {
     tableRowClassName({row, rowIndex}) {
       console.log("row", row);
-      if (row.state === "正常"){
+      if (row.state === "normal"){
         return 'success-row';
-      }else if (row.state === "警告"){
+      }else if (row.state === "warning"){
         return 'warning-row';
       }else {
         return 'danger-row';
@@ -76,6 +93,48 @@ export default {
   },
   data() {
     return {
+      serverData:[
+        {
+          sourceIp:"10.0.0.201",
+          sourcePort:"3003",
+          memoryShare:0.81,
+          cpuUtilization:0.03,
+          state:"normal",
+          timeStamp:"1614913430",
+          serverName:"数据爬取微服务",
+          beatCount:56
+        },
+        {
+          sourceIp:"10.0.0.202",
+          sourcePort:"3002",
+          memoryShare:0.35,
+          cpuUtilization:0.07,
+          state:"normal",
+          timeStamp:"1614913430",
+          serverName:"标注微服务Python后端",
+          beatCount:56
+        },
+        {
+          sourceIp:"10.0.0.203",
+          sourcePort:"3001",
+          memoryShare:0.78,
+          cpuUtilization:0.40,
+          state:"warning",
+          timeStamp:"1614913430",
+          serverName:"图谱构建微服务Pyhton后端",
+          beatCount:56
+        },
+        {
+          sourceIp:"10.0.0.203",
+          sourcePort:"8081",
+          memoryShare:0.34,
+          cpuUtilization:0.10,
+          state:"normal",
+          timeStamp:"1614913430",
+          serverName:"图谱构建微服务Java后端",
+          beatCount:56
+        }
+      ],
       tableData: [{
         ip: '10.0.0.201',
         name: '数据爬取微服务后端系统',

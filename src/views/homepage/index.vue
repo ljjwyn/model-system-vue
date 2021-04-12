@@ -63,7 +63,7 @@
             "tagName":'知识图谱数据集标注系统',
             "describe":'对爬取的数据进行人工/半人工线上标注并提供标注图谱的相关服务',
             //TODO 这里的标注系统的地址是写死的注意替换。
-            "url":'http://192.168.10.9:8080/labelsystem/login.html'},
+            "url":'http://192.168.43.7:8080/labelsystem/login.html'},
           {"imgUrl":'https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=140170663,186220355&fm=26&gp=0.jpg',
             "tagName":'算法云平台',
             "describe":'基于标注平台数据集的在线建模、模型管理、模型复用云平台（本站）',
